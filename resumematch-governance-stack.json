@@ -1,0 +1,412 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Template for a startup company looking to move their services to the cloud",
+    "Parameters": {
+        "s3KeyPrefix": {
+            "Type": "String",
+            "Description": "Parent folder in S3 bucket for Config logs",
+            "Default": "Config"
+        },
+        "s3BucketNamePrefix": {
+            "Type": "String",
+            "Description": "S3 Bucket name prefix for Config files",
+            "Default": "config-resumematch"
+        },
+        "Frequency": {
+            "Type": "String",
+            "Default": "Three_Hours",
+            "Description": "The frequency with which AWS Config delivers configuration snapshots.",
+            "AllowedValues": [
+                "One_Hour",
+                "Three_Hours",
+                "Six_Hours",
+                "Twelve_Hours",
+                "TwentyFour_Hours"
+            ]
+        },
+        "ResumeConfigRecorderName" : {
+            "Type": "String",
+            "Description": "name of the config recorder",
+            "Default": "ResumeConfigRecorder"
+        },
+        "ConfigRecordingGroup": {
+            "Type": "String",
+            "Description": "value of the config groups supported",
+            "Default": "true"
+        },
+        "ConfigResumeDeliveryChannel": {
+            "Type": "String",
+            "Description": "Config delivery channel name",
+            "Default": "ResumeConfigDeliveryCnanel"
+        },
+        "ConfigBucketAccessControl": {
+            "Type": "String",
+            "Description": "value for config bucket access control",
+            "Default": "Private"
+        },
+        "ConfigBucketEncryptionKey": {
+            "Type": "String",
+            "Description": "bucket key enabled",
+            "Default": "true"
+        },
+        "ConfigBucketSSE": {
+            "Type": "String",
+            "Description": "type of encrytption for bucket",
+            "Default": "aws:kms"
+        },
+        "ConfigBucketPublicAccessConfiguration": {
+            "Type": "String",
+            "Description": "bucket block public ACLs",
+            "Default": "true"
+        },
+        "ConfigBucketPublicAccessConfiguration2": {
+            "Type": "String",
+            "Description": "bucket block public policy",
+            "Default": "true"
+        },
+        "ConfigBucketPublicAccessConfiguration3": {
+            "Type": "String",
+            "Description": "ignore public ACLs",
+            "Default": "true"
+        },
+        "ConfigBucketPublicAccessConfiguration4": {
+            "Type": "String",
+            "Description": "restrict public buckets",
+            "Default": "true"
+        },
+        "ConfigKeyEnabled": {
+            "Type": "String",
+            "Description": "config key enabled value",
+            "Default": "true"
+        },
+        "ConfigKeyEnabledRotation": {
+            "Type": "String",
+            "Description": "KMS key rotation",
+            "Default": "true"
+        },
+        "ConfigKeySpec": {
+            "Type": "String",
+            "Description": "spec of config key",
+            "Default": "SYMMETRIC_DEFAULT"
+        },
+        "ConfigKeyUsage": {
+            "Type": "String",
+            "Description": "usage of config key",
+            "Default": "ENCRYPT_DECRYPT"
+        },
+        "ConfigKMSAlias": {
+            "Type": "String",
+            "Description": "alias of config KMS key",
+            "Default": "alias/configKey"
+        },
+        "ConfigEC2EBSRule": {
+            "Type": "String",
+            "Description": "Name of EC2 Config Rule",
+            "Default": "ResumeMatchConfigRuleEC2"
+        },
+        "ConfigEC2SourceIdentifier": {
+            "Type": "String",
+            "Description": "Source identifier for EC2 EBS rule",
+            "Default": "EC2_EBS_ENCRYPTION_BY_DEFAULT"
+        },
+        "ConfigS3Rule": {
+            "Type": "String",
+            "Description": "Name of s3 Rule",
+            "Default": "ResumeMatchConfigRuleS3"
+        },
+        "ConfigS3SourceIdentifier": {
+            "Type": "String",
+            "Description": "Source identifier for s3 Rule",
+            "Default": "S3_DEFAULT_ENCRYPTION_KMS"
+        },
+        "ConfigELBRule": {
+            "Type": "String",
+            "Description": "Name of ELB Rule",
+            "Default": "ResumeMatchConfigRuleELB"
+        },
+        "ConfigELBSourceIdentifier": {
+            "Type": "String",
+            "Description": "Source identifier for ELB Rule",
+            "Default": "ELB_LOGGING_ENABLED"
+        }
+    },
+    "Resources": {
+        "ResumeConfigRecorder": {
+            "Type": "AWS::Config::ConfigurationRecorder",
+            "Properties": {
+                "Name": {
+                    "Ref": "ResumeConfigRecorderName"
+                },
+                "RecordingGroup": {
+                    "AllSupported": {
+                        "Ref": "ConfigRecordingGroup"
+                    }
+                },
+                "RoleARN": {
+                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig"
+                }
+            }
+        },
+        "ResumeConfigDeliveryChannel": {
+            "Type": "AWS::Config::DeliveryChannel",
+            "Properties": {
+                "ConfigSnapshotDeliveryProperties": {
+                    "DeliveryFrequency": {
+                        "Ref": "Frequency"
+                    }
+                },
+                "Name": {
+                    "Ref": "ConfigResumeDeliveryChannel"
+                },
+                "S3BucketName": {
+                    "Ref": "ConfigBucket"
+                },
+                "S3KeyPrefix": {
+                    "Ref": "s3KeyPrefix"
+                },
+                "S3KmsKeyArn": {
+                    "Fn::GetAtt": [
+                        "ConfigKey",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "ConfigBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "AccessControl": {
+                    "Ref": "ConfigBucketAccessControl"
+                },
+                "BucketName": {
+                    "Fn::Sub": "${s3BucketNamePrefix}-${AWS::AccountId}-${AWS::Region}"
+                },
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": [
+                        {
+                            "BucketKeyEnabled": {
+                                "Ref": "ConfigBucketEncryptionKey"
+                            },
+                            "ServerSideEncryptionByDefault": {
+                                "KMSMasterKeyID": {
+                                    "Ref": "ConfigKey"
+                                },
+                                "SSEAlgorithm": {
+                                    "Ref": "ConfigBucketSSE"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "PublicAccessBlockConfiguration": {
+                    "BlockPublicAcls": {"Ref" : "ConfigBucketPublicAccessConfiguration"},
+                    "BlockPublicPolicy": {"Ref" : "ConfigBucketPublicAccessConfiguration2"},
+                    "IgnorePublicAcls": {"Ref" : "ConfigBucketPublicAccessConfiguration3"},
+                    "RestrictPublicBuckets": {"Ref" : "ConfigBucketPublicAccessConfiguration4"}
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ConfigBucket"
+                    }
+                ]
+            }
+        },
+        "ConfigBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "Bucket": {
+                    "Ref": "ConfigBucket"
+                },
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "AllowSSLRequestsOnly",
+                            "Effect": "Deny",
+                            "Principal": "*",
+                            "Action": "s3:*",
+                            "Resource": [
+                                {
+                                    "Fn::Sub": "arn:aws:s3:::${ConfigBucket}"
+                                },
+                                {
+                                    "Fn::Sub": "arn:aws:s3:::${ConfigBucket}/*"
+                                }
+                            ],
+                            "Condition": {
+                                "Bool": {
+                                    "aws:SecureTransport": false
+                                }
+                            }
+                        },
+                        {
+                            "Sid": "AWSConfigBucketPermissionsCheck",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "config.amazonaws.com"
+                            },
+                            "Action": [
+                                "s3:GetBucketAcl",
+                                "s3:ListBucket"
+                            ],
+                            "Resource": {
+                                "Fn::Sub": "arn:aws:s3:::${ConfigBucket}"
+                            }
+                        },
+                        {
+                            "Sid": "AWSConfigBucketDelivery",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "config.amazonaws.com"
+                            },
+                            "Action": [
+                                "s3:PutObject"
+                            ],
+                            "Resource": {
+                                "Fn::Sub": "arn:aws:s3:::${ConfigBucket}/${s3KeyPrefix}/*/*"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "ConfigKey": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "Key to encrypt config records in S3",
+                "Enabled": {"Ref" : "ConfigKeyEnabled"},
+                "EnableKeyRotation": {"Ref" : "ConfigKeyEnabledRotation"},
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Id": "config-key-1",
+                    "Statement": [
+                        {
+                            "Sid": "Allow Administration of the key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:root"
+                                }
+                            },
+                            "Action": [
+                                "kms:Create*",
+                                "kms:Describe*",
+                                "kms:Enable*",
+                                "kms:List*",
+                                "kms:Put*",
+                                "kms:Update*",
+                                "kms:Revoke*",
+                                "kms:Disable*",
+                                "kms:Get*",
+                                "kms:Delete*",
+                                "kms:ScheduleKeyDeletion",
+                                "kms:CancelKeyDeletion"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow AWS Config to use KMS key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "config.amazonaws.com"
+                            },
+                            "Action": [
+                                "kms:Decrypt",
+                                "kms:Encrypt",
+                                "kms:Reencrypt*",
+                                "kms:GenerateDataKey*",
+                                "kms:DescribeKey"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "KeySpec": {"Ref" : "ConfigKeySpec"},
+                "KeyUsage": {"Ref" : "ConfigKeyUsage"},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ConfigKey"
+                    }
+                ]
+            }
+        },
+        "ConfigKeyAlias": {
+            "Type": "AWS::KMS::Alias",
+            "Properties": {
+                "AliasName": {"Ref" : "ConfigKMSAlias"},
+                "TargetKeyId": {
+                    "Ref": "ConfigKey"
+                }
+            }
+        },
+        "ResumeConfigRuleEC2": {
+            "DependsOn": "ResumeConfigRecorder",
+            "Type": "AWS::Config::ConfigRule",
+            "Properties": {
+                "ConfigRuleName": {"Ref" : "ConfigEC2EBSRule"},
+                "Description": "rule to monitor the configuration of AWS resources",
+                "Scope": {
+                    "ComplianceResourceTypes": [
+                        "AWS::EC2::Volume"
+                    ]
+                },
+                "Source": {
+                    "Owner": "AWS",
+                    "SourceIdentifier": {"Ref" : "ConfigEC2SourceIdentifier"}
+                }
+            }
+        },
+        "ResumeConfigRuleS3": {
+            "DependsOn": "ResumeConfigRecorder",
+            "Type": "AWS::Config::ConfigRule",
+            "Properties": {
+                "ConfigRuleName": {"Ref" : "ConfigS3Rule"},
+                "Description": "rule to monitor the configuration of AWS resources",
+                "Scope": {
+                    "ComplianceResourceTypes": [
+                        "AWS::S3::Bucket"
+                    ]
+                },
+                "Source": {
+                    "Owner": "AWS",
+                    "SourceIdentifier": {"Ref" : "ConfigS3SourceIdentifier"}
+                }
+            }
+        },
+        "ResumeConfigRuleELB": {
+            "DependsOn": "ResumeConfigRecorder",
+            "Type": "AWS::Config::ConfigRule",
+            "Properties": {
+                "ConfigRuleName": {"Ref" : "ConfigELBRule"},
+                "Description": "rule to monitor the configuration of AWS resources",
+                "Scope": {
+                    "ComplianceResourceTypes": [
+                        "AWS::ElasticLoadBalancingV2::LoadBalancer"
+                    ]
+                },
+                "Source": {
+                    "Owner": "AWS",
+                    "SourceIdentifier": {"Ref" : "ConfigELBSourceIdentifier"}
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "S3Bucket": {
+            "Value": {
+                "Ref": "ConfigBucket"
+            }
+        },
+        "KmsKeyArn": {
+            "Description": "KMS Key Arn",
+            "Value": {
+                "Fn::GetAtt": [
+                    "ConfigKey",
+                    "Arn"
+                ]
+            }
+        }
+    }
+}

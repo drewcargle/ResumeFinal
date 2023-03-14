@@ -1,0 +1,397 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Template for a startup company looking to move their services to the cloud",
+    "Parameters": {
+        "AutoscalingAZ1": {
+            "Type": "String",
+            "Default": "us-east-2a",
+            "AllowedValues": [
+                "us-east-2a",
+                "us-east-2b",
+                "us-east-2c"
+            ],
+            "Description": "Enter us-east-2a, us-east-2b, or us-east-2c"
+        },
+        "AutoscalingAZ2": {
+            "Type": "String",
+            "Default": "us-east-2b",
+            "AllowedValues": [
+                "us-east-2a",
+                "us-east-2b",
+                "us-east-2c"
+            ],
+            "Description": "Enter us-east-2a, us-east-2b, or us-east-2c"
+        },
+        "InstanceProfileARN": {
+            "Type": "String",
+            "Default": "arn:aws:iam::451750859333:instance-profile/AmazonEC2RoleforSSM",
+            "Description": "ARN for EC2 instance profile used for ASG"
+        },
+        "WebAutoScalingGroupName": {
+            "Type": "String",
+            "Description": "Name of auto scaling group",
+            "Default": "WebAutoScalingGroup"
+        },
+        "AutoScalingGroupDesiredCapacity": {
+            "Type": "String",
+            "Description": "desired capacity for the auto scaling group",
+            "Default": "2"
+        },
+        "AutoScalingGroupHealthCheckType": {
+            "Type": "String",
+            "Description": "health check type for auto scaling group",
+            "Default": "ELB"
+        },
+        "AutoScalingGroupMax": {
+            "Type": "String",
+            "Description": "max number of instances for auto scaling group",
+            "Default": "2"
+        },
+        "AutoScalingGroupMin": {
+            "Type": "String",
+            "Description": "min number of instances for auto scaling group",
+            "Default": "1"
+        },
+        "ASGLaunchTemplateName": {
+            "Type": "String",
+            "Description": "namwe for the ASG Launch Template",
+            "Default": "config-resumematch"
+        },
+        "EBSv1DeviceName": {
+            "Type": "String",
+            "Description": "name of ebs volume 1",
+            "Default": "/dev/sdb"
+        },
+        "EBSv1DeleteonTermination": {
+            "Type": "String",
+            "Description": "EBS volume 1 delete on termination property value",
+            "Default": "true"
+        },
+        "EBSv1Size": {
+            "Type": "String",
+            "Description": "size of EBS volume 1",
+            "Default": "100"
+        },
+        "EBSv1Type": {
+            "Type": "String",
+            "Description": "type of EBS volume 1",
+            "Default": "gp3"
+        },
+        "EBSv2DeviceName": {
+            "Type": "String",
+            "Description": "name of EBS volume 2",
+            "Default": "/dev/sdc"
+        },
+        "EBSv2DeleteonTermination": {
+            "Type": "String",
+            "Description": "EBS v2 delete on termination property value",
+            "Default": "true"
+        },
+        "EBSv2Size": {
+            "Type": "String",
+            "Description": "size of EBS volume 2",
+            "Default": "75"
+        },
+        "EBSv2Type": {
+            "Type": "String",
+            "Description": "type of EBS volume 2",
+            "Default": "gp3"
+        },
+        "EBSv3DeviceName": {
+            "Type": "String",
+            "Description": "name of  EBS volume 3",
+            "Default": "/dev/sdd"
+        },
+        "EBSv3DeleteonTermination": {
+            "Type": "String",
+            "Description": "EBS volume 3 deletion termination property value",
+            "Default": "true"
+        },
+        "EBSv3Size": {
+            "Type": "String",
+            "Description": "size of EBS volume 3",
+            "Default": "50"
+        },
+        "EBSv3Type": {
+            "Type": "String",
+            "Description": "type of EBS volume 3",
+            "Default": "gp3"
+        },
+        "KeyEnabled": {
+            "Type": "String",
+            "Description": "the KMS key is enabled or disabled",
+            "Default": "true"
+        },
+        "InstanceType1": {
+            "Type": "String",
+            "Description": "type of the instance in the auto scaling group",
+            "Default": "t2.large"
+        },
+        "ImageId1": {
+            "Type": "String",
+            "Description": "image id of the in stance in auto scaling group",
+            "Default": "ami-0cc87e5027adcdca8"
+        },
+        "KMSKeyPendingWindowInDays": {
+            "Type": "String",
+            "Description": "length before KMS deletes key removed from a stack",
+            "Default": "7"
+        },
+        "KMSKeySpec": {
+            "Type": "String",
+            "Description": "specification for the KMS Key",
+            "Default": "SYMMETRIC_DEFAULT"
+        },
+        "KMSKeyUsage": {
+            "Type": "String",
+            "Description": "uses for the KMS Key",
+            "Default": "ENCRYPT_DECRYPT"
+        },
+        "AliasNameKMSKey": {
+            "Type": "String",
+            "Description": "alias for the KMS key",
+            "Default": "alias/EbsVolumeKey"
+        }
+    },
+    "Resources": {
+        "WebAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "AutoScalingGroupName": {
+                    "Ref": "WebAutoScalingGroupName"
+                },
+                "AvailabilityZones": [
+                    {
+                        "Ref": "AutoscalingAZ2"
+                    },
+                    {
+                        "Ref": "AutoscalingAZ1"
+                    }
+                ],
+                "DesiredCapacity": {
+                    "Ref": "AutoScalingGroupDesiredCapacity"
+                },
+                "HealthCheckType": {
+                    "Ref": "AutoScalingGroupHealthCheckType"
+                },
+                "LaunchTemplate": {
+                    "LaunchTemplateId": {
+                        "Ref": "ASGLaunchTemplate"
+                    },
+                    "Version": {
+                        "Fn::GetAtt": [
+                            "ASGLaunchTemplate",
+                            "LatestVersionNumber"
+                        ]
+                    }
+                },
+                "VPCZoneIdentifier": [
+                    {
+                        "Fn::ImportValue": "ResumeMatch-PrivateSubnetApp1-ID"
+                    },
+                    {
+                        "Fn::ImportValue": "ResumeMatch-PrivateSubnetApp2-ID"
+                    }
+                ],
+                "TargetGroupARNs": [
+                    {
+                        "Fn::ImportValue": "ResumeMatch-LBTargetGroup-ID"
+                    }
+                ],
+                "MaxSize": {
+                    "Ref": "AutoScalingGroupMax"
+                },
+                "MinSize": {
+                    "Ref": "AutoScalingGroupMin"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebAutoScalingGroup",
+                        "PropagateAtLaunch": "false"
+                    }
+                ]
+            }
+        },
+        "ASGLaunchTemplate": {
+            "Type": "AWS::EC2::LaunchTemplate",
+            "Properties": {
+                "LaunchTemplateName": {
+                    "Ref": "ASGLaunchTemplateName"
+                },
+                "LaunchTemplateData": {
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": {
+                                "Ref": "EBSv1DeviceName"
+                            },
+                            "Ebs": {
+                                "DeleteOnTermination": {
+                                    "Ref": "EBSv1DeleteonTermination"
+                                },
+                                "VolumeSize": {
+                                    "Ref": "EBSv1Size"
+                                },
+                                "VolumeType": {
+                                    "Ref": "EBSv1Type"
+                                }
+                            }
+                        },
+                        {
+                            "DeviceName": {
+                                "Ref": "EBSv2DeviceName"
+                            },
+                            "Ebs": {
+                                "DeleteOnTermination": {
+                                    "Ref": "EBSv2DeleteonTermination"
+                                },
+                                "VolumeSize": {
+                                    "Ref": "EBSv2Size"
+                                },
+                                "VolumeType": {
+                                    "Ref": "EBSv2Type"
+                                }
+                            }
+                        },
+                        {
+                            "DeviceName": {
+                                "Ref": "EBSv3DeviceName"
+                            },
+                            "Ebs": {
+                                "DeleteOnTermination": {
+                                    "Ref": "EBSv3DeleteonTermination"
+                                },
+                                "VolumeSize": {
+                                    "Ref": "EBSv3Size"
+                                },
+                                "VolumeType": {
+                                    "Ref": "EBSv3Type"
+                                }
+                            }
+                        }
+                    ],
+                    "IamInstanceProfile": {
+                        "Arn": {
+                            "Ref": "InstanceProfileARN"
+                        }
+                    },
+                    "ImageId": {
+                        "Ref": "ImageId1"
+                    },
+                    "InstanceType": {
+                        "Ref": "InstanceType1"
+                    },
+                    "SecurityGroupIds": [
+                        {
+                            "Fn::ImportValue": "ResumeMatch-AppTierSecurityGroup-ID"
+                        }
+                    ],
+                    "TagSpecifications": [
+                        {
+                            "ResourceType": "instance",
+                            "Tags": [
+                                {
+                                    "Key": "Name",
+                                    "Value": "AutoScalingEC2"
+                                }
+                            ]
+                        },
+                        {
+                            "ResourceType": "volume",
+                            "Tags": [
+                                {
+                                    "Key": "Name",
+                                    "Value": "AutoScalingEC2-EBS-Volume"
+                                }
+                            ]
+                        }
+                    ],
+                    "UserData": {
+                        "Fn::Base64": "#!/bin/bash\nyum update -y\nyum install -y httpd.x86_64\nservice httpd start\nchkconfig httpd on\ncd /var/www/html\naws s3 cp s3://webfiles-resumematch/ . --recursive"
+                    }
+                }
+            }
+        },
+        "KMSKey1": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "Key to encrypt EBS Volumes for security",
+                "Enabled": {
+                    "Ref": "KeyEnabled"
+                },
+                "PendingWindowInDays": {
+                    "Ref": "KMSKeyPendingWindowInDays"
+                },
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Id": "ebs-key-1",
+                    "Statement": [
+                        {
+                            "Sid": "Enable IAM Permissions",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:root"
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow administration of the key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:user/ecargle"
+                            },
+                            "Action": [
+                                "kms:Put*",
+                                "kms:Create*",
+                                "kms:Describe*",
+                                "kms:Enable*",
+                                "kms:List*",
+                                "kms:Get*",
+                                "kms:Delete*"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow EC2 Auto Scaling permissions to use KMS key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:role/aws-service-role/autoscaling.amazonaws.com/AWSServiceRoleForAutoScaling"
+                            },
+                            "Action": [
+                                "kms:List*",
+                                "kms:Encrypt*",
+                                "kms:Decrypt*",
+                                "kms:Reencrypt*"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "KeySpec": {
+                    "Ref": "KMSKeySpec"
+                },
+                "KeyUsage": {
+                    "Ref": "KMSKeyUsage"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "EBSKey"
+                    }
+                ]
+            }
+        },
+        "KMSKey1Alias": {
+            "Type": "AWS::KMS::Alias",
+            "Properties": {
+                "AliasName": {
+                    "Ref": "AliasNameKMSKey"
+                },
+                "TargetKeyId": {
+                    "Ref": "KMSKey1"
+                }
+            }
+        }
+    }
+}

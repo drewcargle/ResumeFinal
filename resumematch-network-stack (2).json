@@ -1,0 +1,1178 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Template for a startup company looking to move their services to the cloud",
+    "Parameters": {
+        "AutoscalingAZ1": {
+            "Type": "String",
+            "Default": "us-east-2a",
+            "AllowedValues": [
+                "us-east-2a",
+                "us-east-2b",
+                "us-east-2c"
+            ],
+            "Description": "Enter us-east-2a, us-east-2b, or us-east-2c"
+        },
+        "AutoscalingAZ2": {
+            "Type": "String",
+            "Default": "us-east-2b",
+            "AllowedValues": [
+                "us-east-2a",
+                "us-east-2b",
+                "us-east-2c"
+            ],
+            "Description": "Enter us-east-2a, us-east-2b, or us-east-2c"
+        },
+        "VPCCidr": {
+            "Type": "String",
+            "Description": "Cidr block for VPC",
+            "Default": "172.16.10.0/20"
+        },
+        "VPCEnableDNSHostnames": {
+            "Type": "String",
+            "Description": "enabled dns hostnames for VPC",
+            "Default": "true"
+        },
+        "VPCEnableDNSSupport": {
+            "Type": "String",
+            "Description": "enable dns support for VPC",
+            "Default": "true"
+        },
+        "VPCEndpointServiceName": {
+            "Type": "String",
+            "Description": "service name for vpc endpoint",
+            "Default": "com.amazonaws.us-east-2.s3"
+        },
+        "VPCEndpointType": {
+            "Type": "String",
+            "Description": "VPC endpoint type",
+            "Default": "Gateway"
+        },
+        "PublicSubnet1Cidr": {
+            "Type": "String",
+            "Description": "Cidr block for Public Subnet 1",
+            "Default": "172.16.10.0/24"
+        },
+        "PublicSubnet2Cidr": {
+            "Type": "String",
+            "Description": "Cidr block for Public Subnet 2",
+            "Default": "172.16.11.0/24"
+        },
+        "PrivateSubnet1Cidr": {
+            "Type": "String",
+            "Description": "Cidr block for Private Subnet 1",
+            "Default": "172.16.12.0/24"
+        },
+        "PrivateSubnet2Cidr": {
+            "Type": "String",
+            "Description": "Cidr block for Private Subnet 2",
+            "Default": "172.16.13.0/24"
+        },
+        "PublicRoute": {
+            "Type": "String",
+            "Description": "route for the public route table",
+            "Default": "0.0.0.0/0"
+        },
+        "PrivateRoute": {
+            "Type": "String",
+            "Description": "route for the private table",
+            "Default": "0.0.0.0/0"
+        },
+        "NatGatewayConnectivityType": {
+            "Type": "String",
+            "Description": "connectivity type for NAT Gateway",
+            "Default": "public"
+        },
+        "NatGateway2ConnectivityType": {
+            "Type": "String",
+            "Description": "connectivity type for NAT Gateway 2",
+            "Default": "public"
+        },
+        "EIP1": {
+            "Type": "String",
+            "Description": "domain for the EIP",
+            "Default": "vpc"
+        },
+        "EIP2": {
+            "Type": "String",
+            "Description": "domain for the EIP",
+            "Default": "vpc"
+        },
+        "LBSecurityGroupIngressProtocol": {
+            "Type": "String",
+            "Description": "LB Security Group ingress IP Protocol",
+            "Default": "tcp"
+        },
+        "LBSecurityGroupIngressFromPort": {
+            "Type": "String",
+            "Description": "LB Security Group from port number",
+            "Default": "80"
+        },
+        "LBSecurityGroupIngressToPort": {
+            "Type": "String",
+            "Description": "LB Security Group to port number",
+            "Default": "80"
+        },
+        "LBSecurityGroupIngressCidrIp": {
+            "Type": "String",
+            "Description": "Cidr ip for LB Security Group ingress",
+            "Default": "0.0.0.0/0"
+        },
+        "LBSecurityGroupIngressProtocol2": {
+            "Type": "String",
+            "Description": "IP Protocol for LB security group",
+            "Default": "tcp"
+        },
+        "LBSecurityGroupIngressFromPort2": {
+            "Type": "String",
+            "Description": "LB security group from port",
+            "Default": "443"
+        },
+        "LBSecurityGroupIngressToPort2": {
+            "Type": "String",
+            "Description": "LB security group to port",
+            "Default": "443"
+        },
+        "LBSecurityGroupIngressCidrIp2": {
+            "Type": "String",
+            "Description": "Cidr ip for LB Security Group ingress",
+            "Default": "0.0.0.0/0"
+        },
+        "AppTierSGIngressIPProtocol": {
+            "Type": "String",
+            "Description": "app tier sg ingress ip protocol",
+            "Default": "tcp"
+        },
+        "AppTierSGIngressToPort": {
+            "Type": "String",
+            "Description": "app tier sg ingress to port",
+            "Default": "80"
+        },
+        "AppTierSGIngressFromPort": {
+            "Type": "String",
+            "Description": "app tier sg ingress from port",
+            "Default": "80"
+        },
+        "ALBBucketAccessControl": {
+            "Type": "String",
+            "Description": "Access control for the ALB Bucket",
+            "Default": "Private"
+        },
+        "ALBBucketName": {
+            "Type": "String",
+            "Description": "Name of the ALB Bucket",
+            "Default": "albaccesslogsbucket-resumematch"
+        },
+        "ALBBucketEncryptionKey": {
+            "Type": "String",
+            "Description": "bucket encryption key enabled",
+            "Default": "true"
+        },
+        "ALBBucketSSE": {
+            "Type": "String",
+            "Description": "SSE Algorith for ALB Bucket",
+            "Default": "AES256"
+        },
+        "ALBVersioningStatus": {
+            "Type": "String",
+            "Description": "versioning status on ALB Bucket",
+            "Default": "Enabled"
+        },
+        "LoadBalancerAccessLogsAttributes": {
+            "Type": "String",
+            "Description": "access logs enabled",
+            "Default": "true"
+        },
+        "WebLoadBalancerName": {
+            "Type": "String",
+            "Description": "Name of the load balancer",
+            "Default": "ResumeLoadBalancer"
+        },
+        "WebLoadBalancerScheme": {
+            "Type": "String",
+            "Description": "scheme for the Web Load balancer",
+            "Default": "internet-facing"
+        },
+        "WebLoadBalancerType": {
+            "Type": "String",
+            "Description": "type of load balancer",
+            "Default": "application"
+        },
+        "WebLoadBalancerCertificateArn": {
+            "Type": "String",
+            "Description": "arn of the Load Balancer certificate",
+            "Default": "arn:aws:acm:us-east-2:451750859333:certificate/b5bc126d-8883-4710-b023-7130b95f1f4c"
+        },
+        "LoadBalancerListenerDefaultActionsType": {
+            "Type": "String",
+            "Description": "default actions type",
+            "Default": "forward"
+        },
+        "LoadBalancerPort": {
+            "Type": "String",
+            "Description": "port for the load balancer listener",
+            "Default": "443"
+        },
+        "LoadBalancerListenerProtocol": {
+            "Type": "String",
+            "Description": "protocol for the load balancer listener",
+            "Default": "HTTPS"
+        },
+        "LBTargetGroupHealthCheck": {
+            "Type": "String",
+            "Description": "Health check enabled for the Load Balancer Target Group",
+            "Default": "true"
+        },
+        "LBHealthCheckInterval": {
+            "Type": "String",
+            "Description": "Health check interval for the Load Balancer Target Group",
+            "Default": "30"
+        },
+        "LBHealthCheckPort": {
+            "Type": "String",
+            "Description": "Health check port for the Load Balancer Target Group",
+            "Default": 80
+        },
+        "LBHealthCheckProtocol": {
+            "Type": "String",
+            "Description": "Health check protocol for the Load Balancer Target Group",
+            "Default": "HTTP"
+        },
+        "LBTargetGroupIpAddressType": {
+            "Type": "String",
+            "Description": "Ip address type for LB Target Group",
+            "Default": "ipv4"
+        },
+        "LBTargetGroupName": {
+            "Type": "String",
+            "Description": "Name of the LOad Balancer Target Group",
+            "Default": "LBTargetGroup"
+        },
+        "LBTargetGroupPort": {
+            "Type": "String",
+            "Description": "Port for the Load Balancer Target Group",
+            "Default": "80"
+        },
+        "LBTargetGroupProtocol": {
+            "Type": "String",
+            "Description": "Protocol for the Load Balancer Target Group",
+            "Default": "HTTP"
+        },
+        "VPCFlowLogsBucketAccessControl": {
+            "Type": "String",
+            "Description": "Access control for VPC Flow Logs bucket",
+            "Default": "Private"
+        },
+        "VPCFlowLogsBucketName": {
+            "Type": "String",
+            "Description": "Name of the VPC Flow Logs bucket",
+            "Default": "vpcflowlogsbucket-resumematch"
+        },
+        "VPCFlowLogsBucketKeyEnabled": {
+            "Type": "String",
+            "Description": "VPC Flow Logs bucket key enabled",
+            "Default": "true"
+        },
+        "VPCFlowLogsSSEAlgorithm": {
+            "Type": "String",
+            "Description": "Encryption algorithm for VPC Flow Logs bucket",
+            "Default": "aws:kms"
+        },
+        "VPCFlowLogDestinationType": {
+            "Type": "String",
+            "Description": "VPC Flow Log destination type",
+            "Default": "s3"
+        },
+        "VPCFlowLogMaxAggregationInterval": {
+            "Type": "Number",
+            "Description": "Max Aggregation Interval for VPC Flow Log",
+            "Default": 600
+        },
+        "VPCFlowLogResourceId": {
+            "Type": "String",
+            "Description": "Resource Id for the VPC Flow Log",
+            "Default": "vpc-00abcd96f39c01d52"
+        },
+        "VPCFlowLogResourceType": {
+            "Type": "String",
+            "Description": "Resouce type for the VPC Flow Log",
+            "Default": "VPC"
+        },
+        "VPCFlowLogTrafficType": {
+            "Type": "String",
+            "Description": "Traffic type for the VPC Flow Log",
+            "Default": "ALL"
+        },
+        "VPCFlowLogKMSKeyEnabled": {
+            "Type": "String",
+            "Description": "KMS key for VPC Flow Log Enabled",
+            "Default": "true"
+        },
+        "VPCFlowLogKMSKeyPendingWindow": {
+            "Type": "String",
+            "Description": "KMS Key for VPC Flow Log pending window in days for deletion",
+            "Default": "7"
+        },
+        "VPCFlowLogKMSKeySpec": {
+            "Type": "String",
+            "Description": "KMS key spec for VPC Flow Log key",
+            "Default": "SYMMETRIC_DEFAULT"
+        },
+        "VPCFlowLogKMSKeyUsage": {
+            "Type": "String",
+            "Description": "KMS key usage for VPC Flow Log key",
+            "Default": "ENCRYPT_DECRYPT"
+        },
+        "VPCFlowLogKMSKeyAlias": {
+            "Type": "String",
+            "Description": "alias name for VPC Flow Log KMS Key",
+            "Default": "alias/VPCFlowLogBucketKey"
+        }
+    },
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VPCCidr"
+                },
+                "EnableDnsHostnames": {
+                    "Ref": "VPCEnableDNSHostnames"
+                },
+                "EnableDnsSupport": {
+                    "Ref": "VPCEnableDNSSupport"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ResumeVPC"
+                    }
+                ]
+            }
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ResumeGateway"
+                    }
+                ]
+            }
+        },
+        "VPCS3Endpoint": {
+            "Type": "AWS::EC2::VPCEndpoint",
+            "Properties": {
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": "*",
+                            "Action": [
+                                "s3:GetObject",
+                                "s3:ListObject"
+                            ],
+                            "Resource": [
+                                "arn:aws:s3:::albaccesslogsbucket-resumematch/*",
+                                "arn:aws:s3:::amazonlinux.us-east-2.amazonaws.com/*",
+                                "arn:aws:s3:::amazonlinux-2-repos-us-east-2/*",
+                                "arn:aws:s3:::webfiles-resumematch/*"
+                            ]
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Principal": "*",
+                            "Action": "s3:ListBucket",
+                            "Resource": "arn:aws:s3:::webfiles-resumematch"
+                        }
+                    ]
+                },
+                "RouteTableIds": [
+                    {
+                        "Ref": "myPublicRouteTable"
+                    },
+                    {
+                        "Ref": "myPrivateRouteTable"
+                    }
+                ],
+                "ServiceName": {
+                    "Ref": "VPCEndpointServiceName"
+                },
+                "VpcEndpointType": {
+                    "Ref": "VPCEndpointType"
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "PublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet1Cidr"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AutoscalingAZ1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PublicSubnet1"
+                    }
+                ]
+            }
+        },
+        "PublicRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "myPublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                }
+            }
+        },
+        "PublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet2Cidr"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AutoscalingAZ2"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PublicSubnet2"
+                    }
+                ]
+            }
+        },
+        "PublicRTAssociation2": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "myPublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                }
+            }
+        },
+        "PrivateSubnetApp1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PrivateSubnet1Cidr"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AutoscalingAZ1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PrivateSubnetApp1"
+                    }
+                ]
+            }
+        },
+        "PrivateRTAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "myPrivateRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PrivateSubnetApp1"
+                }
+            }
+        },
+        "PrivateSubnetApp2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PrivateSubnet2Cidr"
+                },
+                "AvailabilityZone": {
+                    "Ref": "AutoscalingAZ2"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "PrivateSubnetApp2"
+                    }
+                ]
+            }
+        },
+        "PrivateRTAssociation2": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "myPrivateRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PrivateSubnetApp2"
+                }
+            }
+        },
+        "myPublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "myPublicRT"
+                    }
+                ]
+            }
+        },
+        "myPublicRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "myPublicRouteTable"
+                },
+                "DestinationCidrBlock": {
+                    "Ref": "PublicRoute"
+                },
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                }
+            }
+        },
+        "myPrivateRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "myPrivateRouteTable"
+                    }
+                ]
+            }
+        },
+        "myPrivateRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "myPrivateRouteTable"
+                },
+                "DestinationCidrBlock": {
+                    "Ref": "PrivateRoute"
+                },
+                "NatGatewayId": {
+                    "Ref": "NatGateway"
+                }
+            }
+        },
+        "NatGateway": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "MyEIP",
+                        "AllocationId"
+                    ]
+                },
+                "ConnectivityType": {
+                    "Ref": "NatGatewayConnectivityType"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "NatGateway1"
+                    }
+                ]
+            }
+        },
+        "NatGateway2": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "MyEIP2",
+                        "AllocationId"
+                    ]
+                },
+                "ConnectivityType": {
+                    "Ref": "NatGateway2ConnectivityType"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "NatGateway2"
+                    }
+                ]
+            }
+        },
+        "MyEIP": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": {
+                    "Ref": "EIP1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "eip"
+                    }
+                ]
+            }
+        },
+        "MyEIP2": {
+            "Type": "AWS::EC2::EIP",
+            "Properties": {
+                "Domain": {
+                    "Ref": "EIP2"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "eip2"
+                    }
+                ]
+            }
+        },
+        "LoadBalancerSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Accept traffic from the internet and direct to app tier",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": {
+                            "Ref": "LBSecurityGroupIngressProtocol"
+                        },
+                        "FromPort": {
+                            "Ref": "LBSecurityGroupIngressFromPort"
+                        },
+                        "ToPort": {
+                            "Ref": "LBSecurityGroupIngressToPort"
+                        },
+                        "CidrIp": {
+                            "Ref": "LBSecurityGroupIngressCidrIp"
+                        }
+                    },
+                    {
+                        "IpProtocol": {
+                            "Ref": "LBSecurityGroupIngressProtocol2"
+                        },
+                        "FromPort": {
+                            "Ref": "LBSecurityGroupIngressFromPort2"
+                        },
+                        "ToPort": {
+                            "Ref": "LBSecurityGroupIngressToPort2"
+                        },
+                        "CidrIp": {
+                            "Ref": "LBSecurityGroupIngressCidrIp2"
+                        }
+                    }
+                ]
+            }
+        },
+        "AppTierSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Accept traffic from load balancer",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "AppTierIngressRule": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "FromPort": {
+                    "Ref": "AppTierSGIngressFromPort"
+                },
+                "ToPort": {
+                    "Ref": "AppTierSGIngressToPort"
+                },
+                "IpProtocol": {
+                    "Ref": "AppTierSGIngressIPProtocol"
+                },
+                "GroupId": {
+                    "Fn::GetAtt": [
+                        "AppTierSecurityGroup",
+                        "GroupId"
+                    ]
+                },
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "LoadBalancerSecurityGroup",
+                        "GroupId"
+                    ]
+                }
+            }
+        },
+        "ALBAccessLogsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "AccessControl": {
+                    "Ref": "ALBBucketAccessControl"
+                },
+                "BucketName": {
+                    "Ref": "ALBBucketName"
+                },
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": [
+                        {
+                            "BucketKeyEnabled": {
+                                "Ref": "ALBBucketEncryptionKey"
+                            },
+                            "ServerSideEncryptionByDefault": {
+                                "SSEAlgorithm": {
+                                    "Ref": "ALBBucketSSE"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ALBAccessLogsBucket"
+                    }
+                ],
+                "VersioningConfiguration": {
+                    "Status": {
+                        "Ref": "ALBVersioningStatus"
+                    }
+                }
+            }
+        },
+        "ALBAccessLogsBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "Bucket": {
+                    "Ref": "ALBAccessLogsBucket"
+                },
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::033677994240:root"
+                            },
+                            "Action": [
+                                "s3:PutObject"
+                            ],
+                            "Resource": "arn:aws:s3:::albaccesslogsbucket-resumematch/AWSLogs/451750859333/*"
+                        }
+                    ]
+                }
+            }
+        },
+        "WebLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "IpAddressType": "ipv4",
+                "LoadBalancerAttributes": [
+                    {
+                        "Key": "access_logs.s3.enabled",
+                        "Value": {
+                            "Ref": "LoadBalancerAccessLogsAttributes"
+                        }
+                    },
+                    {
+                        "Key": "access_logs.s3.bucket",
+                        "Value": {
+                            "Ref": "ALBAccessLogsBucket"
+                        }
+                    }
+                ],
+                "Name": {
+                    "Ref": "WebLoadBalancerName"
+                },
+                "Scheme": {
+                    "Ref": "WebLoadBalancerScheme"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "LoadBalancerSecurityGroup"
+                    }
+                ],
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "LoadBalancer"
+                    }
+                ],
+                "Type": {
+                    "Ref": "WebLoadBalancerType"
+                }
+            }
+        },
+        "LoadBalancerListener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "Certificates": [
+                    {
+                        "CertificateArn": {
+                            "Ref": "WebLoadBalancerCertificateArn"
+                        }
+                    }
+                ],
+                "DefaultActions": [
+                    {
+                        "TargetGroupArn": {
+                            "Ref": "LBTargetGroup"
+                        },
+                        "Type": {
+                            "Ref": "LoadBalancerListenerDefaultActionsType"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "WebLoadBalancer"
+                },
+                "Port": {
+                    "Ref": "LoadBalancerPort"
+                },
+                "Protocol": {
+                    "Ref": "LoadBalancerListenerProtocol"
+                }
+            }
+        },
+        "LBTargetGroup": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "HealthCheckEnabled": {
+                    "Ref": "LBTargetGroupHealthCheck"
+                },
+                "HealthCheckIntervalSeconds": {
+                    "Ref": "LBHealthCheckInterval"
+                },
+                "HealthCheckPath": "/index.html",
+                "HealthCheckPort": {
+                    "Ref": "LBHealthCheckPort"
+                },
+                "HealthCheckProtocol": {
+                    "Ref": "LBHealthCheckProtocol"
+                },
+                "IpAddressType": {
+                    "Ref": "LBTargetGroupIpAddressType"
+                },
+                "Name": {
+                    "Ref": "LBTargetGroupName"
+                },
+                "Port": {
+                    "Ref": "LBTargetGroupPort"
+                },
+                "Protocol": {
+                    "Ref": "LBTargetGroupProtocol"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "LBTargetGroup"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            }
+        },
+        "VPCFlowLogsBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "AccessControl": {
+                    "Ref": "VPCFlowLogsBucketAccessControl"
+                },
+                "BucketName": {
+                    "Ref": "VPCFlowLogsBucketName"
+                },
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": [
+                        {
+                            "BucketKeyEnabled": {
+                                "Ref": "VPCFlowLogsBucketKeyEnabled"
+                            },
+                            "ServerSideEncryptionByDefault": {
+                                "KMSMasterKeyID": {
+                                    "Fn::GetAtt": [
+                                        "KMSKey2",
+                                        "Arn"
+                                    ]
+                                },
+                                "SSEAlgorithm": {
+                                    "Ref": "VPCFlowLogsSSEAlgorithm"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "VPCFlowLogBucket"
+                    }
+                ]
+            }
+        },
+        "VPCFlowLogsBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "Bucket": {
+                    "Ref": "VPCFlowLogsBucket"
+                },
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "AWSLogDeliveryWrite",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "delivery.logs.amazonaws.com"
+                            },
+                            "Action": "s3:PutObject",
+                            "Resource": {
+                                "Fn::Sub": "arn:aws:s3:::${VPCFlowLogsBucketName}/AWSLogs/${AWS::AccountId}/*"
+                            },
+                            "Condition": {
+                                "StringEquals": {
+                                    "aws:SourceAccount": {
+                                        "Fn::Sub": "${AWS::AccountId}"
+                                    },
+                                    "s3:x-amz-acl": "bucket-owner-full-control"
+                                },
+                                "ArnLike": {
+                                    "aws:SourceArn": {
+                                        "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Sid": "AWSLogDeliveryAclCheck",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "delivery.logs.amazonaws.com"
+                            },
+                            "Action": "s3:GetBucketAcl",
+                            "Resource": {
+                                "Fn::Sub": "arn:aws:s3:::${VPCFlowLogsBucketName}"
+                            },
+                            "Condition": {
+                                "StringEquals": {
+                                    "aws:SourceAccount": {
+                                        "Fn::Sub": "${AWS::AccountId}"
+                                    }
+                                },
+                                "ArnLike": {
+                                    "aws:SourceArn": {
+                                        "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "VPCFLowLog": {
+            "DependsOn": "VPCFlowLogsBucketPolicy",
+            "Type": "AWS::EC2::FlowLog",
+            "Properties": {
+                "LogDestination": {
+                    "Fn::Sub": "arn:aws:s3:::${VPCFlowLogsBucketName}"
+                },
+                "LogDestinationType": {
+                    "Ref": "VPCFlowLogDestinationType"
+                },
+                "LogFormat": "${version} ${vpc-id} ${subnet-id} ${instance-id} ${srcaddr} ${srcport} ${protocol}",
+                "MaxAggregationInterval": {
+                    "Ref": "VPCFlowLogMaxAggregationInterval"
+                },
+                "ResourceId": {
+                    "Ref": "VPCFlowLogResourceId"
+                },
+                "ResourceType": {
+                    "Ref": "VPCFlowLogResourceType"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ResumeVPCFLowLog"
+                    }
+                ],
+                "TrafficType": {
+                    "Ref": "VPCFlowLogTrafficType"
+                }
+            }
+        },
+        "KMSKey2": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "Key to encrypt S3 bucket for VPC Flow logs",
+                "Enabled": {
+                    "Ref": "VPCFlowLogKMSKeyEnabled"
+                },
+                "PendingWindowInDays": {
+                    "Ref": "VPCFlowLogKMSKeyPendingWindow"
+                },
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Id": "s3-key-1",
+                    "Statement": [
+                        {
+                            "Sid": "Enable IAM Permissions",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:root"
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow administration of the key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:user/ecargle"
+                            },
+                            "Action": [
+                                "kms:Put*",
+                                "kms:Create*",
+                                "kms:Describe*",
+                                "kms:Enable*",
+                                "kms:List*",
+                                "kms:Get*",
+                                "kms:Delete*"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow VPC Flow Logs to use the key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "delivery.logs.amazonaws.com"
+                            },
+                            "Action": [
+                                "kms:Decrypt*",
+                                "kms:Encrypt*",
+                                "kms:Reencrypt*",
+                                "kms:GenerateDataKey*",
+                                "kms:DescribeKey"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "KeySpec": {
+                    "Ref": "VPCFlowLogKMSKeySpec"
+                },
+                "KeyUsage": {
+                    "Ref": "VPCFlowLogKMSKeyUsage"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "S3FlowLogKey"
+                    }
+                ]
+            }
+        },
+        "KMSKey2Alias": {
+            "Type": "AWS::KMS::Alias",
+            "Properties": {
+                "AliasName": {
+                    "Ref": "VPCFlowLogKMSKeyAlias"
+                },
+                "TargetKeyId": {
+                    "Ref": "KMSKey2"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "PrivateSubnetApp1": {
+            "Description": "The subnet ID to use for autoscaling group",
+            "Value": {
+                "Ref": "PrivateSubnetApp1"
+            },
+            "Export": {
+                "Name": "ResumeMatch-PrivateSubnetApp1-ID"
+            }
+        },
+        "PrivateSubnetApp2": {
+            "Description": "The subnet ID to use for autoscaling group",
+            "Value": {
+                "Ref": "PrivateSubnetApp2"
+            },
+            "Export": {
+                "Name": "ResumeMatch-PrivateSubnetApp2-ID"
+            }
+        },
+        "AppTierSecurityGroup": {
+            "Description": "The security group ID to use for autoscaling group",
+            "Value": {
+                "Fn::GetAtt": [
+                    "AppTierSecurityGroup",
+                    "GroupId"
+                ]
+            },
+            "Export": {
+                "Name": "ResumeMatch-AppTierSecurityGroup-ID"
+            }
+        },
+        "LBTargetGroup": {
+            "Description": "The security group ID to use for autoscaling group",
+            "Value": {
+                "Ref": "LBTargetGroup"
+            },
+            "Export": {
+                "Name": "ResumeMatch-LBTargetGroup-ID"
+            }
+        }
+    }
+}

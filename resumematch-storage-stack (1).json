@@ -1,0 +1,391 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Template for a startup company looking to move their services to the cloud",
+    "Parameters": {
+        "CloudformationBucketName": {
+            "Type": "String",
+            "Description": "name of the cloudformation bucket",
+            "Default": "cloudformationbucket-resumematch"
+        },
+        "CloudformationBucketAccessControl": {
+            "Type": "String",
+            "Description": "Access control for the cloudformation bucket",
+            "Default": "Private"
+        },
+        "CloudformationBucketEncryptionKey": {
+            "Type": "String",
+            "Description": "Enabled encryption key for cloudformation bucket",
+            "Default": "true"
+        },
+        "CloudformationBucketSSE": {
+            "Type": "String",
+            "Description": "sse algorithm for encryption",
+            "Default": "aws:kms"
+        },
+        "CloudformationKeyEnabled": {
+            "Type": "String",
+            "Description": "cloudformation kms key enabled",
+            "Default": "true"
+        },
+        "CloudformationKeyPendingWindow": {
+            "Type": "String",
+            "Description": "pending window for kms key",
+            "Default": "7"
+        },
+        "CloudformationKeySpec": {
+            "Type": "String",
+            "Description": "spec for KMS key",
+            "Default": "SYMMETRIC_DEFAULT"
+        },
+        "CloudformationKeyUsage": {
+            "Type": "String",
+            "Description": "usage for KMS key",
+            "Default": "ENCRYPT_DECRYPT"
+        },
+        "CloudformationKeyAlias": {
+            "Type": "String",
+            "Description": "alias for cloudformation kms key",
+            "Default": "alias/S3CloudFormationBucketKey"
+        },
+        "DynamoDBTableAttributeName": {
+            "Type": "String",
+            "Description": "attribute name for dynamodb table",
+            "Default": "Emailaddress"
+        },
+        "DynamoDBTableAttributeType": {
+            "Type": "String",
+            "Description": "attribute type for dynamodb table",
+            "Default": "S"
+        },
+        "DynamoDBTableKeyType": {
+            "Type": "String",
+            "Description": "key type for the DynamoDB Table key schema",
+            "Default": "HASH"
+        },
+        "DynamoDBTableBilling": {
+            "Type": "String",
+            "Description": "billing mode for db table",
+            "Default": "PAY_PER_REQUEST"
+        },
+        "DynamoDBTablePointInTimeRecoverySpecification": {
+            "Type": "String",
+            "Description": "point in time recovery enabled for db table",
+            "Default": "true"
+        },
+        "DBTableSSEEnabled": {
+            "Type": "String",
+            "Description": "SSE enabled for dynamodb table",
+            "Default": "true"
+        },
+        "DBTableSSEType": {
+            "Type": "String",
+            "Description": "sse type dor dynamodb table",
+            "Default": "KMS"
+        },
+        "DBTableClass": {
+            "Type": "String",
+            "Description": "class of the dynamodb table",
+            "Default": "STANDARD"
+        },
+        "DBTableName": {
+            "Type": "String",
+            "Description": "name of the dyanmodb table",
+            "Default": "ResumeDynamoDBTable"
+        },
+        "DynamoDBTableKeyEnabled": {
+            "Type": "String",
+            "Description": "dynamodb table key enabled",
+            "Default": "true"
+        },
+        "DynamoDBTableKeyPendingWindow": {
+            "Type": "String",
+            "Description": "pending window in days for kms key",
+            "Default": "7"
+        },
+        "DynamoDBTableKeySpec": {
+            "Type": "String",
+            "Description": "key spec for dynamodb table kms key",
+            "Default": "SYMMETRIC_DEFAULT"
+        },
+        "DynamoDBTableKeyUsage": {
+            "Type": "String",
+            "Description": "key usage for dynamodb table kms key",
+            "Default": "ENCRYPT_DECRYPT"
+        },
+        "DynamoDBTableKeyAlias": {
+            "Type": "String",
+            "Description": "alias for dynamodb table kms key",
+            "Default": "alias/DynamoDBKey"
+        }
+    },
+    "Resources": {
+        "CloudFormationBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "AccessControl": {
+                    "Ref": "CloudformationBucketAccessControl"
+                },
+                "BucketName": {
+                    "Ref": "CloudformationBucketName"
+                },
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": [
+                        {
+                            "BucketKeyEnabled": {
+                                "Ref": "CloudformationBucketEncryptionKey"
+                            },
+                            "ServerSideEncryptionByDefault": {
+                                "KMSMasterKeyID": {
+                                    "Ref": "KMSKey3"
+                                },
+                                "SSEAlgorithm": {
+                                    "Ref": "CloudformationBucketSSE"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "CloudformationBucket"
+                    }
+                ]
+            }
+        },
+        "CloudFormationBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+                "Bucket": {
+                    "Ref": "CloudFormationBucket"
+                },
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:user/ecargle"
+                            },
+                            "Action": "s3:PutObject",
+                            "Resource": "arn:aws:s3:::cloudformationbucket-resumematch/cfn-templates/*"
+                        }
+                    ]
+                }
+            }
+        },
+        "KMSKey3": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "Key to encrypt S3 bucket for CloudFormation templates",
+                "Enabled": {
+                    "Ref": "CloudformationKeyEnabled"
+                },
+                "PendingWindowInDays": {
+                    "Ref": "CloudformationKeyPendingWindow"
+                },
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Id": "cloudformation-key-1",
+                    "Statement": [
+                        {
+                            "Sid": "Enable IAM Permissions",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:root"
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow administration of the key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:user/ecargle"
+                            },
+                            "Action": [
+                                "kms:Put*",
+                                "kms:Create*",
+                                "kms:Describe*",
+                                "kms:Enable*",
+                                "kms:List*",
+                                "kms:Get*",
+                                "kms:Delete*"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow encryption for CloudFormation S3 Bucket",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "s3.amazonaws.com"
+                            },
+                            "Action": [
+                                "kms:Encrypt*",
+                                "kms:Decrypt*",
+                                "kms:Reencrypt*"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "KeySpec": {
+                    "Ref": "CloudformationKeySpec"
+                },
+                "KeyUsage": {
+                    "Ref": "CloudformationKeyUsage"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "KMSKeyCF"
+                    }
+                ]
+            }
+        },
+        "KMSKey3Alias": {
+            "Type": "AWS::KMS::Alias",
+            "Properties": {
+                "AliasName": {
+                    "Ref": "CloudformationKeyAlias"
+                },
+                "TargetKeyId": {
+                    "Ref": "KMSKey3"
+                }
+            }
+        },
+        "ResumeDynamoDBTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": {
+                            "Ref": "DynamoDBTableAttributeName"
+                        },
+                        "AttributeType": {
+                            "Ref": "DynamoDBTableAttributeType"
+                        }
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "KeyType": {
+                            "Ref": "DynamoDBTableKeyType"
+                        },
+                        "AttributeName": {
+                            "Ref": "DynamoDBTableAttributeName"
+                        }
+                    }
+                ],
+                "BillingMode": {
+                    "Ref": "DynamoDBTableBilling"
+                },
+                "PointInTimeRecoverySpecification": {
+                    "PointInTimeRecoveryEnabled": {
+                        "Ref": "DynamoDBTablePointInTimeRecoverySpecification"
+                    }
+                },
+                "SSESpecification": {
+                    "SSEEnabled": {
+                        "Ref": "DBTableSSEEnabled"
+                    },
+                    "SSEType": {
+                        "Ref": "DBTableSSEType"
+                    }
+                },
+                "TableClass": {
+                    "Ref": "DBTableClass"
+                },
+                "TableName": {
+                    "Ref": "DBTableName"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "ResumeTable"
+                    }
+                ]
+            }
+        },
+        "KMSKey4": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description": "Key to encrypt DynamoDB",
+                "Enabled": {
+                    "Ref": "DynamoDBTableKeyEnabled"
+                },
+                "PendingWindowInDays": {
+                    "Ref": "DynamoDBTableKeyPendingWindow"
+                },
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Id": "dynamodb-key-1",
+                    "Statement": [
+                        {
+                            "Sid": "Enable IAM Permissions",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:root"
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow administration of the key",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "arn:aws:iam::451750859333:user/ecargle"
+                            },
+                            "Action": [
+                                "kms:Put*",
+                                "kms:Create*",
+                                "kms:Describe*",
+                                "kms:Enable*",
+                                "kms:List*",
+                                "kms:Get*",
+                                "kms:Delete*"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Sid": "Allow encryption for DynamoDB",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": "dynamodb.amazonaws.com"
+                            },
+                            "Action": [
+                                "kms:Encrypt*",
+                                "kms:Decrypt*",
+                                "kms:Reencrypt*"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "KeySpec": {
+                    "Ref": "DynamoDBTableKeySpec"
+                },
+                "KeyUsage": {
+                    "Ref": "DynamoDBTableKeyUsage"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "KMSKeyDynamoDB"
+                    }
+                ]
+            }
+        },
+        "KMSKey4Alias": {
+            "Type": "AWS::KMS::Alias",
+            "Properties": {
+                "AliasName": {
+                    "Ref": "DynamoDBTableKeyAlias"
+                },
+                "TargetKeyId": {
+                    "Ref": "KMSKey4"
+                }
+            }
+        }
+    }
+}

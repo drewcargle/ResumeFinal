@@ -1,0 +1,222 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Template for a startup company looking to move their services to the cloud",
+    "Parameters": {
+        "RESTAPIName": {
+            "Type": "String",
+            "Description": "Name of the REST API",
+            "Default": "RMInterestList"
+        },
+        "RESTAPIEndpointConfiguration": {
+            "Type": "String",
+            "Description": "Endpoint configuration for REST API",
+            "Default": "REGIONAL"
+        },
+        "APIDeploymentStageName": {
+            "Type": "String",
+            "Description": "Name of API Deployment Stage",
+            "Default": "Dev"
+        },
+        "APIGatewayMethodAuthoriationType": {
+            "Type": "String",
+            "Description": "Authorization type for API Gatewat Method",
+            "Default": "NONE"
+        },
+        "APIGatewayHttpMethod": {
+            "Type": "String",
+            "Description": "HTT method for API Gateway",
+            "Default": "POST"
+        },
+        "APIGatewayMethodPassthroughBehavior": {
+            "Type": "String",
+            "Description": "Passthrough behavior for API Gateway Method",
+            "Default": "WHEN_NO_TEMPLATES"
+        },
+        "APIGatewayIntegrationHttpMethod": {
+            "Type": "String",
+            "Description": "Integration Http Method for API Gateway",
+            "Default": "POST"
+        },
+        "APIGatewayIntegrationType": {
+            "Type": "String",
+            "Description": "Integration type for API Gateway Method",
+            "Default": "AWS"
+        },
+        "APIGatewayIntegrationResponseCode": {
+            "Type": "String",
+            "Description": "Response code for Api Gateway Method response",
+            "Default": "200"
+        },
+        "APIGatewayRoleName": {
+            "Type": "String",
+            "Description": "Name of the API Gateway Role",
+            "Default": "APIGatewayRole1"
+        },
+        "APIGatewayResourcePathPart": {
+            "Type": "String",
+            "Description": "Name of API Gateway resource Path Part",
+            "Default": "rminterestlist"
+        },
+        "APIGatewayRolePolicyName": {
+            "Type": "String",
+            "Description": "name of the policy attached to role",
+            "Default": "ApiAccessPolicy"
+        }
+    },
+    "Resources": {
+        "MyRESTApi": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+                "Name": {
+                    "Ref": "RESTAPIName"
+                },
+                "Description": "Api to interact with AWS DynamoDB",
+                "EndpointConfiguration": {
+                    "Types": [
+                        {
+                            "Ref": "RESTAPIEndpointConfiguration"
+                        }
+                    ]
+                }
+            }
+        },
+        "ApiDeployment": {
+            "DependsOn": "ApiGatewayMethod",
+            "Type": "AWS::ApiGateway::Deployment",
+            "Properties": {
+                "Description": "Deployment for API Resource",
+                "RestApiId": {
+                    "Ref": "MyRESTApi"
+                },
+                "StageName": {
+                    "Ref": "APIDeploymentStageName"
+                }
+            }
+        },
+        "ApiGatewayMethod": {
+            "Type": "AWS::ApiGateway::Method",
+            "Properties": {
+                "AuthorizationType": {
+                    "Ref": "APIGatewayMethodAuthoriationType"
+                },
+                "HttpMethod": {
+                    "Ref": "APIGatewayHttpMethod"
+                },
+                "ResourceId": {
+                    "Ref": "ApiGatewayResource"
+                },
+                "RestApiId": {
+                    "Ref": "MyRESTApi"
+                },
+                "MethodResponses": [
+                    {
+                        "StatusCode": {
+                            "Ref": "APIGatewayIntegrationResponseCode"
+                        }
+                    }
+                ],
+                "Integration": {
+                    "Credentials": {
+                        "Fn::GetAtt": [
+                            "ApiGatewayRole",
+                            "Arn"
+                        ]
+                    },
+                    "PassthroughBehavior": {
+                        "Ref": "APIGatewayMethodPassthroughBehavior"
+                    },
+                    "IntegrationHttpMethod": {
+                        "Ref": "APIGatewayIntegrationHttpMethod"
+                    },
+                    "Type": {
+                        "Ref": "APIGatewayIntegrationType"
+                    },
+                    "IntegrationResponses": [
+                        {
+                            "StatusCode": {
+                                "Ref": "APIGatewayIntegrationResponseCode"
+                            }
+                        }
+                    ],
+                    "RequestTemplates": {
+                        "application/x-www-form-urlencoded": "#set ($keyValues = {})\n#set($prarametersString = $input.body)\n#set($parameters = $prarametersString.split(\"&\"))\n#foreach($parameter in $parameters)\n#set($keyValue = $parameter.split(\"=\"))\n$keyValues.put($util.urlDecode($keyValue[0]),$util.urlDecode($keyValue[1]))\n#end\n{\n    \"TableName\": \"ResumeDynamoDBTable\",\n    \"Item\": {\n#foreach($key in $keyValues.keySet())\n#set($value = $keyValues.get($key))\n#set($class = $value.class)\n##$class\n#if($class == \"class java.lang.Integer\" \n    || $class == \"class java.lang.Double\"\n    || $class == \"class java.lang.Float\"\n    || $class == \"class java.lang.BigDecimal\"\n    || $class == \"class java.lang.BigInteger\"\n)\n#set($type = \"N\")\n#elseif($class == \"class java.lang.Boolean\")\n#set($type = \"BOOL\")\n#else\n#set($type = \"S\")\n#end\n        \"$key\": {\n            \"$type\": \"$value\"\n        }#if($foreach.hasNext),#end\n\n#end\n    }\n}\n"
+                    },
+                    "Uri": {
+                        "Fn::Sub": "arn:aws:apigateway:${AWS::Region}:dynamodb:action/PutItem"
+                    }
+                }
+            }
+        },
+        "ApiGatewayResource": {
+            "Type": "AWS::ApiGateway::Resource",
+            "Properties": {
+                "ParentId": {
+                    "Fn::GetAtt": [
+                        "MyRESTApi",
+                        "RootResourceId"
+                    ]
+                },
+                "RestApiId": {
+                    "Ref": "MyRESTApi"
+                },
+                "PathPart": {
+                    "Ref": "APIGatewayResourcePathPart"
+                }
+            }
+        },
+        "ApiStage": {
+            "Type": "AWS::ApiGateway::Stage",
+            "Properties": {
+                "DeploymentId": {
+                    "Ref": "ApiDeployment"
+                },
+                "Description": "Initial stage for RM Match Api",
+                "RestApiId": {
+                    "Ref": "MyRESTApi"
+                }
+            }
+        },
+        "ApiGatewayRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "apigateway.amazonaws.com"
+                                ]
+                            },
+                            "Action": "sts:AssumeRole"
+                        }
+                    ]
+                },
+                "RoleName": {
+                    "Ref": "APIGatewayRoleName"
+                },
+                "Description": "IAM role for api gateway to interact with dynamodb table",
+                "Policies": [
+                    {
+                        "PolicyName": {
+                            "Ref": "APIGatewayRolePolicyName"
+                        },
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "dynamodb:PutItem"
+                                    ],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
