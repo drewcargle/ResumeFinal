@@ -8,6 +8,11 @@ A new company would like to run a marketing campaign to develop prospects. Digit
 
 ### User Journey To Landing Page
 
+The user will browse to https://www.resumematched.com. The landing page will be returned and the user will be asked to submit some information. After the data has been input, the user will hit submit and see a thank you message,
+
+### Technical Journey of Landing Page
+
+
 
 
 
