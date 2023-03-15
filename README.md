@@ -12,6 +12,14 @@ The user will browse to https://www.resumematched.com. The landing page will be 
 
 ### Technical Journey of Landing Page
 
+## Business Landing Page Link
+
+Https://www.resumematched.com
+
+
+
+
+
 
 
 
