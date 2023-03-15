@@ -16,6 +16,14 @@ The user will browse to https://www.resumematched.com. The landing page will be 
 
 Https://www.resumematched.com
 
+## Template Order of Deployment
+
+1. Governance Template
+2. Networking Template
+3. Compute Template
+4. Application Template
+5. Storage Template
+
 
 
 
