@@ -16,6 +16,8 @@ There is a CNAME record in Route 53 that points to the ELB. The user browses to 
 
 Using port 80, the Load Balancer sends the request to the EC2 Instances inside of the Auto Scaling Group located in private subnets. The EC2 Instances sends the landing page to the Load Balancer which serves it to the user. After the user submits their information, the data will go to an API Gateway. The data will go from the API Gateway to a DynamoDB table.
 
+Two NAT Gateways, one in each public subnet just in case the EC2 instances need to reach the internet for updates or patches.
+
 There are AWS Config rules in place to monitor the configuration of S3 Buckets, ELB & EC2 EBS Volumes.
 
 There is a CloudTrail log to monitor amd record account activity.
