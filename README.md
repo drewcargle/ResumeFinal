@@ -12,6 +12,8 @@ The user will browse to https://www.resumematched.com. The landing page will be 
 
 ### Technical Journey of Landing Page
 
+There is a CNAME record in Route 53 that points to the ELB. The user browses to https://www.resumematched.com. 
+
 Using port 80, the Load Balancer sends the request to the EC2 Instances inside of the Auto Scaling Group located in private subnets. The EC2 Instances sends the landing page to the Load Balancer which serves it to the user. After the user submits their information, the data will go to an API Gateway. The data will go from the API Gateway to a DynamoDB table.
 
 There are AWS Config rules in place to monitor the configuration of S3 Buckets, ELB & EC2 EBS Volumes.
