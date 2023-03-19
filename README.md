@@ -22,6 +22,8 @@ Two NAT Gateways, one in each public subnet just in case the EC2 instances need 
 
 There are AWS Config rules in place to monitor the configuration of S3 Buckets, ELB & EC2 EBS Volumes.
 
+The VPC S3 Endpoint
+
 There is a CloudTrail log to monitor amd record account activity.
 
 Fuur S3 Buckets. One for each of the following: VPC Flow Logs, ALB Access Logs, New CloudFormation Templates & AWS Config recordings. The VPC Flow Logs, Cloudformation templates and AWS Config recordings buckets are all encrypted with AWS KMS keys. The ALB Access Logs bucket is encrypred with SSE:AES-256.
