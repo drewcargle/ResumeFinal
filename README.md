@@ -52,7 +52,8 @@ Https://www.resumematched.com
   * AWS Config Recorder
   * something else
 2. Networking Template
-  *
+  * VPC
+  * 
 3. Compute Template
   *
 4. Application Template
