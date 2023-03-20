@@ -47,9 +47,10 @@ Https://www.resumematched.com
 
 ## Template Order of Deployment
 
-1. Governance Template 
-i. asdlfkjasdf 
-3. Networking Template
+1. Governance Template
+			i. this template deploys 
+			ii. alkjdfa df
+3. Networking Template - this temp
 4. Compute Template
 5. Application Template
 6. Storage Template
