@@ -51,11 +51,14 @@ Https://www.resumematched.com
   * AWS Config Rules
   * AWS Config Recorder
   * something else
-ii. alkjdfa df
-3. Networking Template - this temp
-4. Compute Template
-5. Application Template
-6. Storage Template
+2. Networking Template
+  *
+3. Compute Template
+  *
+4. Application Template
+  *
+5. Storage Template
+  *
 
 
 
