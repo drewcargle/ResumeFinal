@@ -21,7 +21,7 @@ A new company would like to run a marketing campaign to develop prospects. Digit
 5. This information is sent to the API Gateway, which sends the data to DynamoDB where it will persist. 
 
 ### Architectural Details
-![High-Level Architecture](
+![High-Level Architecture](Architectural Diagram.png)
 There is a VPC with 2 Availibity Zones. Four subnets, two public, two private.
 
 There is a CNAME record in Route 53 that points to the ELB. The user browses to https://www.resumematched.com. 
