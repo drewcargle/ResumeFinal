@@ -36,9 +36,9 @@ There are AWS Config rules in place to monitor the configuration of S3 Buckets, 
 
 The VPC S3 Endpoint is used to provide a private connection for the ALB to deliver access logs and for the EC2 Instances to download patches and bootstrap scripts.
 
-There is a CloudTrail log to monitor amd record account activity.
+There is a CloudTrail log to monitor and record account activity.
 
-Fuur S3 Buckets. One for each of the following: VPC Flow Logs, ALB Access Logs, New CloudFormation Templates & AWS Config recordings. The VPC Flow Logs, Cloudformation templates and AWS Config recordings buckets are all encrypted with AWS KMS keys. The ALB Access Logs bucket is encrypred with SSE:AES-256.
+Four S3 Buckets. One for each of the following: VPC Flow Logs, ALB Access Logs, New CloudFormation Templates & AWS Config recordings. The VPC Flow Logs, Cloudformation templates and AWS Config recordings buckets are all encrypted with AWS KMS keys. The ALB Access Logs bucket is encrypred with SSE:AES-256.
 
 
 ## Business Landing Page Link
@@ -48,10 +48,12 @@ Https://www.resumematched.com
 ## Template Order of Deployment
 
 1. Governance Template
-2. Networking Template
-3. Compute Template
-4. Application Template
-5. Storage Template
+  i. AWS Resources
+    a.
+3. Networking Template
+4. Compute Template
+5. Application Template
+6. Storage Template
 
 
 
