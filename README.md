@@ -47,9 +47,8 @@ Https://www.resumematched.com
 
 ## Template Order of Deployment
 
-1. Governance Template
-  i. AWS Resources
-    a.
+1. Governance Template 
+i. asdlfkjasdf 
 3. Networking Template
 4. Compute Template
 5. Application Template
