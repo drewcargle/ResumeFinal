@@ -48,7 +48,8 @@ Https://www.resumematched.com
 ## Template Order of Deployment
 
 1. Governance Template
-  * something
+  * AWS Config Rules
+  * AWS Config Recorder
   * something else
 ii. alkjdfa df
 3. Networking Template - this temp
