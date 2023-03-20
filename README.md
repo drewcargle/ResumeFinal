@@ -14,6 +14,13 @@ A new company would like to run a marketing campaign to develop prospects. Digit
 
 ### Technical Journey of Landing Page
 
+1. The www.resumematched.com domain name is aliased (via a CNAME record) to the public facing Application Load Balancer. Therefore, when a user browses to the website, this traffic is forwarded to the ALB.
+2. The ALB has a Target Group, which is comprised of an multi-AZ Auto Scaling Group with EC2 instances. When the ALB recieves incoming traffic, it will forward the traffic to the instances in the ASG.
+3. The instances will respond to the the request by serving the homepage of the website to the ALB, and the ALB forwards the response to the user's browser.
+
+
+this name will be resolved
+
 There is a VPC with 2 Availibity Zones. Four subnets, two public, two private.
 
 There is a CNAME record in Route 53 that points to the ELB. The user browses to https://www.resumematched.com. 
@@ -26,7 +33,7 @@ Two NAT Gateways, one in each public subnet just in case the EC2 instances need 
 
 There are AWS Config rules in place to monitor the configuration of S3 Buckets, ELB & EC2 EBS Volumes.
 
-The VPC S3 Endpoint is used for the ALB access logs and the EC2 Instances to use the bootstrap scripts.
+The VPC S3 Endpoint is used to provide a private connection for the ALB to deliver access logs and for the EC2 Instances to download patches and bootstrap scripts.
 
 There is a CloudTrail log to monitor amd record account activity.
 
