@@ -8,7 +8,9 @@ A new company would like to run a marketing campaign to develop prospects. Digit
 
 ### User Journey To Landing Page
 
-The user will browse to https://www.resumematched.com. The landing page will be returned and the user will be asked to submit some information. After the data has been input, the user will hit submit and see a thank you message.
+1. The user will browse to https://www.resumematched.com. 
+2. The landing page will be returned and the user will be asked to submit their information.
+3. After the data has been input, the user will hit submit and see a thank you message.
 
 ### Technical Journey of Landing Page
 
@@ -24,7 +26,7 @@ Two NAT Gateways, one in each public subnet just in case the EC2 instances need 
 
 There are AWS Config rules in place to monitor the configuration of S3 Buckets, ELB & EC2 EBS Volumes.
 
-The VPC S3 Endpoint
+The VPC S3 Endpoint is used for the ALB access logs and the EC2 Instances to use the bootstrap scripts.
 
 There is a CloudTrail log to monitor amd record account activity.
 
