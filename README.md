@@ -82,7 +82,9 @@ Https://www.resumematched.com
   * API Gateway Resource
   * API Gateway Role
 5. Storage Template
-  *
+  * S3 Bucket & Bucket Policy
+  * Two AWS KMS Keys & Key Policies (Two Key Aliases)
+  * DynamoDB Table
 
 
 
