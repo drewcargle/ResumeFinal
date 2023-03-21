@@ -71,9 +71,16 @@ Https://www.resumematched.com
   * VPC Flow Logs Bucket & Bucket Policy
   * KMS Key & Key Policy
 3. Compute Template
-  *
+  * Auto Scaling Group
+  * Auto Scaling Group Launch Template
+  * AWS KMS Key & Key Policy
+  * AWS KMS Key Alias
 4. Application Template
-  *
+  * API Gateway Rest API
+  * API Gateway Deployment
+  * API Gateway Method
+  * API Gateway Resource
+  * API Gateway Role
 5. Storage Template
   *
 
