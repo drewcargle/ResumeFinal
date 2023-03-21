@@ -49,11 +49,27 @@ Https://www.resumematched.com
 
 1. Governance Template
   * AWS Config Rules
+  * AWS Config Delivery Channel
   * AWS Config Recorder
-  * something else
+  * AWS KMS Key & Key Policy
+  * S3 Bucket & Bucket Policy
 2. Networking Template
   * VPC
-  * 
+  * Four Subnets
+  * Internet Gatewway
+  * VPC S3 Endpoint
+  * Two Route Tables
+  * Two NAT Gateways
+  * Two EIP
+  * Load Balancer
+  * Load Balancer Security Group
+  * EC2 Instance Security Group
+  * ALB Access Logs Bucket & Bucket Policy
+  * Load Balancer Listener
+  * Load Balancer Target Group
+  * VPC Flow Logs
+  * VPC Flow Logs Bucket & Bucket Policy
+  * KMS Key & Key Policy
 3. Compute Template
   *
 4. Application Template
